@@ -1,203 +1,359 @@
-﻿<!DOCTYPE html>
+
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>CS3 Stremio Bridge</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 0 18px;
-            color: #222;
-        }
-
-        h1 {
-            margin-bottom: 8px;
-        }
-
-        .muted {
-            color: #666;
-        }
-
-        .repos {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 20px 0;
-        }
-
-        button {
-            padding: 10px 14px;
-            border: 0;
-            border-radius: 8px;
-            background: #2457c5;
-            color: white;
-            cursor: pointer;
-        }
-
-        input {
-            padding: 11px;
-            min-width: 280px;
-            max-width: 100%;
-            border: 1px solid #bbb;
-            border-radius: 8px;
-        }
-
-        .panel {
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 18px;
-        }
-
-        .item {
-            padding: 12px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .item:last-child {
-            border: 0;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS3 Stremio Bridge v0.2.1</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: Arial, sans-serif;
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 0 16px;
+  color: #222;
+  background: #f7f8fb;
+}
+h1 { margin-bottom: 5px; }
+h2 { margin-top: 28px; }
+.muted { color: #687080; font-size: 13px; }
+.panel {
+  background: white;
+  border: 1px solid #e0e3e9;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+}
+button {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #2457c5;
+  color: white;
+  cursor: pointer;
+  margin: 4px;
+}
+button.secondary { background: #566174; }
+input, select {
+  padding: 11px;
+  border: 1px solid #cbd0da;
+  border-radius: 8px;
+  max-width: 100%;
+  background: white;
+}
+input { min-width: 250px; }
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 10px;
+}
+.stat {
+  background: white;
+  border: 1px solid #e0e3e9;
+  border-radius: 10px;
+  padding: 14px;
+}
+.stat strong {
+  display: block;
+  font-size: 25px;
+  margin-bottom: 5px;
+}
+.item {
+  background: white;
+  border: 1px solid #e0e3e9;
+  border-radius: 10px;
+  padding: 14px;
+  margin: 9px 0;
+}
+.item h3 { margin: 0 0 8px; }
+.tag {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #edf1f8;
+  font-size: 12px;
+  margin: 3px 4px 3px 0;
+}
+.tag.green { background: #e1f5e8; color: #176b38; }
+.tag.red { background: #fde8e8; color: #a52c2c; }
+.tag.orange { background: #fff1d9; color: #875500; }
+.repo-buttons { margin: 14px 0; }
+#status { white-space: pre-wrap; }
+.hidden { display: none; }
+@media(max-width: 600px) {
+  body { margin-top: 18px; }
+  input { min-width: 100%; width: 100%; }
+}
+</style>
 </head>
-
 <body>
 
-    <h1>CS3 Stremio Bridge <small>v0.1.1</small></h1>
+<h1>CS3 Stremio Bridge <small>v0.2.1</small></h1>
+<p class="muted">
+Quản lý Cloudstream repositories và JavaScript provider adapters.
+</p>
 
-    <p class="muted">
-        Đọc manifest và danh sách plugin của Cloudstream repository.
-    </p>
-
-    <h2>Repository mặc định</h2>
-
-    <div class="repos">
-
-        <button onclick="loadRepo(
-            'https://gitlab.com/tearrs/movie/-/raw/main/repo.json'
-        )">
-            Vietnamese Movie
-        </button>
-
-        <button onclick="loadRepo(
-'https://raw.githubusercontent.com/h0dev/0cs3/refs/heads/movie/repo.json'
-)">
-            Vietnamese Extension
-        </button>
-
-    </div>
-
-    <h2>Thêm repository khác</h2>
-
-    <input
-        id="repo"
-        type="url"
-        placeholder="https://example.com/repo.json"
-        size="48"
-    >
+<section class="panel">
+  <h2>Repository mặc định</h2>
+  <div class="repo-buttons">
+    <button onclick="loadRepo(
+      'https://gitlab.com/tearrs/movie/-/raw/main/repo.json'
+    )">Vietnamese Movie</button>
 
     <button onclick="loadRepo(
-        document.getElementById('repo').value
-    )">
-        Đọc repository đã nhập
-    </button>
+      'https://raw.githubusercontent.com/h0dev/0cs3/refs/heads/movie/repo.json'
+    )">Vietnamese Extension</button>
+  </div>
 
-    <div id="status" class="panel">
-        Chọn một repository để xem danh sách plugin.
-    </div>
+  <h3>Thêm repository khác</h3>
+  <div class="controls">
+    <input id="repo" type="url"
+      placeholder="https://example.com/repo.json">
+    <button onclick="loadRepo(
+      document.getElementById('repo').value
+    )">Đọc repository</button>
+  </div>
+  <div id="status" class="muted">
+    Chọn repository để xem thông tin.
+  </div>
+</section>
 
-    <script>
+<h2>Provider Registry</h2>
 
-        async function loadRepo(url) {
+<div class="controls">
+  <button onclick="loadRegistry()">Tải lại Registry</button>
+  <span id="registryTime" class="muted"></span>
+</div>
 
-            const output = document.getElementById('status');
+<div id="registryStatus" class="panel">
+  Đang chờ tải Registry...
+</div>
 
-            try {
+<div id="stats" class="stats"></div>
 
-                if (!/^https:\/\//i.test(url)) {
-                    throw new Error('Chỉ chấp nhận URL HTTPS.');
-                }
+<section class="panel">
+  <h3>Danh sách Provider</h3>
+  <div class="controls">
+    <input id="search" type="search"
+      placeholder="Tìm tên plugin..."
+      oninput="renderRegistry()">
 
-                output.textContent = 'Đang tải repository...';
+    <select id="category" onchange="renderRegistry()">
+      <option value="all">Tất cả loại</option>
+      <option value="movie">Movie</option>
+      <option value="series">Series</option>
+      <option value="movie-series">Movie + Series</option>
+      <option value="anime">Anime</option>
+      <option value="utility">Utility</option>
+      <option value="unknown">Unknown</option>
+    </select>
 
-                const response = await fetch(
-                    '/api?url=' + encodeURIComponent(url)
-                );
+    <select id="pluginStatus" onchange="renderRegistry()">
+      <option value="all">Tất cả trạng thái</option>
+      <option value="active">Active</option>
+      <option value="disabled">Disabled</option>
+      <option value="unknown">Unknown</option>
+    </select>
+  </div>
 
-                const data = await response.json();
+  <div id="resultCount" class="muted"></div>
+  <div id="pluginList"></div>
+</section>
 
-                if (!response.ok) {
-                    throw new Error(
-                        data.error || 'Không đọc được repository.'
-                    );
-                }
+<script>
+let registryData = null;
 
-                output.innerHTML =
-                    '<h3>' +
-                    escapeHtml(data.repository.name || 'Repository') +
-                    '</h3>' +
+function escapeHtml(value) {
+  return String(value ?? '').replace(
+    /[&<>"']/g,
+    c => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[c]
+  );
+}
 
-                    '<p>' +
-                    escapeHtml(data.repository.description || '') +
-                    '</p>' +
+const categoryNames = {
+  movie: 'Movie',
+  series: 'Series',
+  'movie-series': 'Movie + Series',
+  anime: 'Anime',
+  utility: 'Utility',
+  unknown: 'Chưa phân loại'
+};
 
-                    '<p>' +
-                    data.plugins.length +
-                    ' plugin</p>' +
+async function loadRepo(url) {
+  const output = document.getElementById('status');
 
-                    data.plugins.map(plugin => {
+  try {
+    if (!/^https:\/\//i.test(url || '')) {
+      throw new Error('Chỉ chấp nhận URL HTTPS.');
+    }
 
-                        const name =
-                            plugin.name ||
-                            plugin.internalName ||
-                            'Plugin';
+    output.textContent = 'Đang tải repository...';
 
-                        const details = [
-                            plugin.version,
-                            plugin.language,
-                            plugin.type
-                        ].filter(Boolean).join(' · ');
+    const response = await fetch(
+      '/api?url=' + encodeURIComponent(url)
+    );
 
-                        return `
-                            <div class="item">
-                                <b>${escapeHtml(name)}</b>
-                                <br>
-                                <span class="muted">
-                                    ${escapeHtml(details)}
-                                </span>
-                            </div>
-                        `;
+    const data = await response.json();
 
-                    }).join('');
+    if (!response.ok) {
+      throw new Error(data.error || 'Không đọc được repository.');
+    }
 
-            } catch (error) {
+    output.innerHTML =
+      '<h3>' + escapeHtml(data.repository?.name || 'Repository') + '</h3>' +
+      '<p>' + escapeHtml(data.repository?.description || '') + '</p>' +
+      '<b>' + (data.plugins || []).length + ' plugin</b>' +
+      (data.plugins || []).map(plugin => {
+        const name = plugin.name || plugin.internalName || 'Plugin';
+        const details = [
+          plugin.version,
+          plugin.language,
+          plugin.type
+        ].filter(Boolean).join(' · ');
 
-                output.textContent = 'Lỗi: ' + error.message;
+        return '<div class="item"><b>' +
+          escapeHtml(name) +
+          '</b><p class="muted">' +
+          escapeHtml(details) +
+          '</p></div>';
+      }).join('');
+  } catch (error) {
+    output.textContent = 'Lỗi: ' + error.message;
+  }
+}
 
-            }
+async function loadRegistry() {
+  const status = document.getElementById('registryStatus');
+  status.textContent = 'Đang tải dữ liệu từ hai repository...';
 
-        }
+  try {
+    const response = await fetch('/api/registry', {
+      cache: 'no-store'
+    });
 
-        function escapeHtml(value) {
+    const data = await response.json();
 
-            return String(value ?? '').replace(
-                /[&<>"']/g,
-                character => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#39;'
-                })[character]
-            );
+    if (!response.ok) {
+      throw new Error(data.error || 'Registry không tải được.');
+    }
 
-        }
+    registryData = data;
 
-    </script>
+    document.getElementById('registryTime').textContent =
+      'Cập nhật: ' +
+      new Date(data.generatedAt).toLocaleString('vi-VN');
 
+    const s = data.stats || {};
+
+    document.getElementById('stats').innerHTML = `
+      <div class="stat">
+        <strong>${s.totalUniquePlugins || 0}</strong>
+        <span class="muted">Plugin duy nhất</span>
+      </div>
+      <div class="stat">
+        <strong>${s.repositoriesLoaded || 0}/2</strong>
+        <span class="muted">Repository đã tải</span>
+      </div>
+      <div class="stat">
+        <strong>${s.statuses?.active || 0}</strong>
+        <span class="muted">Active theo metadata</span>
+      </div>
+      <div class="stat">
+        <strong>${s.statuses?.disabled || 0}</strong>
+        <span class="muted">Disabled theo metadata</span>
+      </div>
+    `;
+
+    status.innerHTML =
+      '<b>Registry đã tải thành công.</b><br>' +
+      'Phiên bản: ' + escapeHtml(data.version) +
+      '<br>Repository lỗi: ' + (data.errors || []).length;
+
+    renderRegistry();
+  } catch (error) {
+    status.textContent = 'Lỗi Registry: ' + error.message;
+  }
+}
+
+function renderRegistry() {
+  if (!registryData) return;
+
+  const search = document.getElementById('search')
+    .value.trim().toLowerCase();
+
+  const category = document.getElementById('category').value;
+  const pluginStatus = document.getElementById('pluginStatus').value;
+
+  const plugins = (registryData.plugins || []).filter(plugin => {
+    const name = [
+      plugin.name,
+      plugin.internalName,
+      plugin.description
+    ].join(' ').toLowerCase();
+
+    return (
+      (!search || name.includes(search)) &&
+      (category === 'all' || plugin.category === category) &&
+      (pluginStatus === 'all' || plugin.status === pluginStatus)
+    );
+  });
+
+  document.getElementById('resultCount').textContent =
+    'Hiển thị ' + plugins.length +
+    ' / ' + (registryData.plugins || []).length + ' plugin';
+
+  document.getElementById('pluginList').innerHTML =
+    plugins.map(plugin => {
+      const categoryName =
+        categoryNames[plugin.category] || 'Chưa phân loại';
+
+      const statusClass =
+        plugin.status === 'active' ? 'green' :
+        plugin.status === 'disabled' ? 'red' : 'orange';
+
+      const repositories =
+        (plugin.repositoryNames || []).join(', ');
+
+      return `
+        <article class="item">
+          <h3>${escapeHtml(plugin.name)}</h3>
+          <span class="tag">${escapeHtml(categoryName)}</span>
+          <span class="tag ${statusClass}">
+            ${escapeHtml(plugin.status)}
+          </span>
+          <span class="tag">Chờ JS Adapter</span>
+
+          <p class="muted">
+            Internal name: ${escapeHtml(plugin.internalName)}
+          </p>
+          <p class="muted">
+            Version: ${escapeHtml(plugin.version || 'Không rõ')}
+            · Language: ${escapeHtml(plugin.language || 'Không rõ')}
+          </p>
+          <p class="muted">
+            Repository: ${escapeHtml(repositories)}
+          </p>
+          <p>${escapeHtml(plugin.description || '')}</p>
+        </article>
+      `;
+    }).join('') ||
+    '<p class="muted">Không tìm thấy plugin phù hợp.</p>';
+}
+
+loadRegistry();
+</script>
 </body>
 </html>
